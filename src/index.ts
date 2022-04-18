@@ -17,12 +17,21 @@ const GITHUB_TOKEN = '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';
 
 const getActionFromArguments = async (
   argv: string[],
-): Promise<{ action: 'help' } | { action: 'init'; organization: string }> => {
-  const params = [...argv.slice(2)];
-  if (params[0] === 'init') {
-    if (params[1].length > 0) {
-      return { action: 'init', organization: params[1] };
+): Promise<
+  | { action: 'help' | 'pull' | 'push' }
+  | { action: 'init'; organization: string }
+> => {
+  const [command, params] = [...argv.slice(2)];
+  if (command === 'init') {
+    if (params[0].length > 0) {
+      return { action: 'init', organization: params[0] };
     }
+  }
+  if (command === 'pull') {
+    return { action: 'pull' };
+  }
+  if (command === 'push') {
+    return { action: 'push' };
   }
   return { action: 'help' };
 };
@@ -44,11 +53,6 @@ const main = async () => {
   }
   const given = await getActionFromArguments(argv);
 
-  if (given.action === 'help') {
-    console.log('🪞 Mirror: https://github.com/junhoyeo/mirrors');
-    return;
-  }
-
   if (given.action === 'init') {
     // FIXME: Replace hardcoded `page` with proper state
     const url = `https://api.github.com/orgs/${
@@ -69,7 +73,7 @@ const main = async () => {
       name: v.name,
       repositoryURL: v.html_url,
     }));
-    await Promise.allSettled(
+    await Promise.all(
       organizations.map(async (repository) => {
         const clonePath = `./repositories/${repository.name}`;
         console.log(`Cloning \`${repository.name}\` Started`);
@@ -80,8 +84,32 @@ const main = async () => {
     return;
   }
 
-  const repositories = await getDirectoriesInPath(REPOSITORIES);
-  console.log(repositories);
+  if (given.action === 'pull') {
+    const repositories = await getDirectoriesInPath(REPOSITORIES);
+
+    await Promise.allSettled(
+      repositories.map(async (repository) => {
+        const { stdout, stderr } = await exec(
+          `cd ./repositories/${repository} && git pull`,
+        );
+        console.log({ stdout, stderr, repository });
+      }),
+    );
+
+    return;
+  }
+
+  if (given.action === 'push') {
+    console.log(
+      '🛸 `mirror push` is to be implemented in the near future. Please open an issue at https://github.com/junhoyeo/mirrors',
+    );
+    return;
+  }
+
+  if (given.action === 'help') {
+    console.log('🪞 Mirror: https://github.com/junhoyeo/mirrors');
+    return;
+  }
 };
 
 main()
