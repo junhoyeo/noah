@@ -22,7 +22,7 @@ const getActionFromArguments = async (
   | { action: 'help' | 'pull' | 'push' }
   | { action: 'init'; organization: string }
 > => {
-  const [command, params] = [...argv.slice(2)];
+  const [command, ...params] = [...argv.slice(2)];
   if (command === 'init') {
     if (params[0].length > 0) {
       return { action: 'init', organization: params[0] };
