@@ -49,10 +49,14 @@ const main = async () => {
   const given = await getActionFromArguments(argv);
 
   if (given.action === 'init') {
-    // FIXME: Replace hardcoded `page` with proper state
-    const url = `https://api.github.com/orgs/${
-      given.organization
-    }/repos?page=${0}&per_page=100`;
+    const url = queryString.stringifyUrl({
+      url: `https://api.github.com/orgs/${given.organization}/repos`,
+      query: {
+        // FIXME: Replace hardcoded `page` with proper state
+        page: 0,
+        per_page: 100,
+      },
+    });
 
     const { data } = await axios.get<{ name: string; html_url: string }[]>(
       queryString.stringifyUrl({ url, query: { type: 'all' } }),
@@ -68,7 +72,7 @@ const main = async () => {
       name: v.name,
       repositoryURL: v.html_url,
     }));
-    await Promise.all(
+    await Promise.allSettled(
       organizations.map(async (repository) => {
         const clonePath = `./repositories/${repository.name}`;
         console.log(`Cloning \`${repository.name}\` Started`);
