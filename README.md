@@ -9,12 +9,6 @@ git clone https://github.com/junhoyeo/mirrors
 cd mirrors/
 ```
 
-Remove `.git` from cloned directory.
-
-```bash
-rm -rf .git
-```
-
 Clone your repositories in `repositories/*`.
 
 ```bash
