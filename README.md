@@ -2,7 +2,7 @@
 
 ## Usage
 
-Clone this repo.
+Clone this repo or create a new one using this as an template.
 
 ```bash
 git clone https://github.com/junhoyeo/mirrors
