@@ -1,5 +1,9 @@
 # Mirrors
 
+## Dependencies
+
+- `nodegit@0.28.0-alpha.11`: NodeGit. `alpha.11` with Apple Silicon support 👍
+
 ## Usage
 
 Clone this repo.
@@ -31,11 +35,7 @@ yarn mirrors init https://github.com/mirrors
 
 ```bash
 yarn mirrors pull
+
+# To be implemented later
 yarn mirrors push
 ```
-
-## ETC
-
-### Dependencies
-
-- `nodegit@0.28.0-alpha.11`: NodeGit. `alpha.11` with Apple Silicon support 👍
