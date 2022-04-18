@@ -75,7 +75,7 @@ const main = async () => {
     }));
     await Promise.allSettled(
       organizations.map(async (repository) => {
-        const clonePath = `./repositories/${repository.name}`;
+        const clonePath = `./repositories/${given.organization}/${repository.name}`;
         console.log(`Cloning \`${repository.name}\` Started`);
         await exec(`git clone ${repository.repositoryURL} ${clonePath}`);
         console.log(`Cloning \`${repository.name}\` Done`);
@@ -85,7 +85,19 @@ const main = async () => {
   }
 
   if (given.action === 'pull') {
-    const repositories = await getDirectoriesInPath(REPOSITORIES);
+    const organizations = await getDirectoriesInPath(REPOSITORIES);
+
+    const repositoriesByOrgs = await Promise.all(
+      organizations.flatMap(async (organizationName) => {
+        const _repositories = await getDirectoriesInPath(
+          path.join(REPOSITORIES, organizationName),
+        );
+        return _repositories.map(
+          (repositoryName) => `${organizationName}/${repositoryName}`,
+        );
+      }),
+    );
+    const repositories = repositoriesByOrgs.flat();
 
     await Promise.allSettled(
       repositories.map(async (repository) => {
