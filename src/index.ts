@@ -20,12 +20,12 @@ const getActionFromArguments = async (
   argv: string[],
 ): Promise<
   | { action: 'help' | 'pull' | 'push' }
-  | { action: 'init'; organization: string }
+  | { action: 'watch'; organization: string }
 > => {
   const [command, ...params] = [...argv.slice(2)];
-  if (command === 'init') {
+  if (command === 'watch') {
     if (params[0].length > 0) {
-      return { action: 'init', organization: params[0] };
+      return { action: 'watch', organization: params[0] };
     }
   }
   if (command === 'pull') {
@@ -49,7 +49,7 @@ const main = async () => {
   }
   const given = await getActionFromArguments(argv);
 
-  if (given.action === 'init') {
+  if (given.action === 'watch') {
     const url = queryString.stringifyUrl({
       url: `https://api.github.com/orgs/${given.organization}/repos`,
       query: {
