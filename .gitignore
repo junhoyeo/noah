@@ -1,0 +1,9 @@
+# App
+./repositories/*
+
+# Build
+node_modules
+dist
+
+# OS X
+.DS_Store
