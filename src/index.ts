@@ -1,9 +1,13 @@
 import axios from 'axios';
+import { exec as execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { argv, exit } from 'process';
 import queryString from 'query-string';
 import shell from 'shelljs';
+import util from 'util';
+
+const exec = util.promisify(execSync);
 
 const ROOT = path.join(__dirname, '..');
 const REPOSITORIES = path.join(ROOT, './repositories');
@@ -51,7 +55,7 @@ const main = async () => {
       given.organization
     }/repos?page=${0}&per_page=100`;
 
-    const { data } = await axios.get<{ html_url: string }[]>(
+    const { data } = await axios.get<{ name: string; html_url: string }[]>(
       queryString.stringifyUrl({ url, query: { type: 'all' } }),
       {
         headers: {
@@ -60,8 +64,19 @@ const main = async () => {
         },
       },
     );
-    const organizations = data.map((v) => v.html_url);
-    console.log(organizations);
+
+    const organizations = data.map((v) => ({
+      name: v.name,
+      repositoryURL: v.html_url,
+    }));
+    await Promise.allSettled(
+      organizations.map(async (repository) => {
+        const clonePath = `./repositories/${repository.name}`;
+        console.log(`Cloning \`${repository.name}\` Started`);
+        await exec(`git clone ${repository.repositoryURL} ${clonePath}`);
+        console.log(`Cloning \`${repository.name}\` Done`);
+      }),
+    );
     return;
   }
 
