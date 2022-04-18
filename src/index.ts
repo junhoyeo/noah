@@ -1,13 +1,15 @@
 import axios from 'axios';
-import { exec as synchronizedExec } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { argv, exit } from 'process';
+import queryString from 'query-string';
 import shell from 'shelljs';
-import util from 'util';
 
 const ROOT = path.join(__dirname, '..');
 const REPOSITORIES = path.join(ROOT, './repositories');
+
+// FIXME: Revoke and replace hardcoded token with injectable value
+const GITHUB_TOKEN = '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';
 
 const getActionFromArguments = async (
   argv: string[],
@@ -15,7 +17,7 @@ const getActionFromArguments = async (
   const params = [...argv.slice(2)];
   if (params[0] === 'init') {
     if (params[1].length > 0) {
-      return { action: 'init', organization: argv[1] };
+      return { action: 'init', organization: params[1] };
     }
   }
   return { action: 'help' };
@@ -25,6 +27,11 @@ const getDirectoriesInPath = async (path: string) =>
   (await fs.promises.readdir(path, { withFileTypes: true }))
     .filter((dirent) => dirent.isDirectory())
     .map((dirent) => dirent.name);
+
+const Base64 = {
+  encode: (str: string): string =>
+    Buffer.from(str, 'binary').toString('base64'),
+};
 
 const main = async () => {
   if (!shell.which('git') || !shell.which('gh')) {
@@ -43,7 +50,16 @@ const main = async () => {
     const url = `https://api.github.com/orgs/${
       given.organization
     }/repos?page=${0}&per_page=100`;
-    const { data } = await axios.get<{ html_url: string }[]>(url);
+
+    const { data } = await axios.get<{ html_url: string }[]>(
+      queryString.stringifyUrl({ url, query: { type: 'all' } }),
+      {
+        headers: {
+          Accept: 'application/vnd.github.v3+json',
+          Authorization: `token ${GITHUB_TOKEN}`,
+        },
+      },
+    );
     const organizations = data.map((v) => v.html_url);
     console.log(organizations);
     return;

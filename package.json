@@ -10,7 +10,9 @@
     "mirrors": "node ./dist"
   },
   "dependencies": {
-    "nodegit": "0.28.0-alpha.11",
+    "axios": "^0.26.1",
+    "isomorphic-git": "^1.17.1",
+    "query-string": "^7.1.1",
     "shelljs": "^0.8.5"
   },
   "devDependencies": {
