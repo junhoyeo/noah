@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { exec as execSync } from 'child_process';
+import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import { argv, exit } from 'process';
@@ -12,8 +13,8 @@ const exec = util.promisify(execSync);
 const ROOT = path.join(__dirname, '..');
 const REPOSITORIES = path.join(ROOT, './repositories');
 
-// FIXME: Revoke and replace hardcoded token with injectable value
-const GITHUB_TOKEN = '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';
+// NOTE: Old hardcoded token have been revoked
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 const getActionFromArguments = async (
   argv: string[],

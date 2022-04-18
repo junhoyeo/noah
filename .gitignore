@@ -1,5 +1,6 @@
 # App
 repositories/*
+.env
 
 # Build
 node_modules
