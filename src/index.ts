@@ -41,11 +41,6 @@ const getDirectoriesInPath = async (path: string) =>
     .filter((dirent) => dirent.isDirectory())
     .map((dirent) => dirent.name);
 
-const Base64 = {
-  encode: (str: string): string =>
-    Buffer.from(str, 'binary').toString('base64'),
-};
-
 const main = async () => {
   if (!shell.which('git') || !shell.which('gh')) {
     console.log('🪞 Mirror requires `git` and `gh` to be installed.');
