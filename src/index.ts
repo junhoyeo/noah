@@ -69,16 +69,24 @@ const main = async () => {
       },
     );
 
-    const organizations = data.map((v) => ({
+    const repos = data.map((v) => ({
       name: v.name,
       repositoryURL: v.html_url,
     }));
+
+    const TOTAL_NUMBER_OF_REPOS = repos.length;
+    let REPO_COUNT = 0;
+    console.log('Found repos:', TOTAL_NUMBER_OF_REPOS);
+
     await Promise.allSettled(
-      organizations.map(async (repository) => {
+      repos.map(async (repository) => {
         const clonePath = `./repositories/${given.organization}/${repository.name}`;
         console.log(`Cloning \`${repository.name}\` Started`);
         await exec(`git clone ${repository.repositoryURL} ${clonePath}`);
-        console.log(`Cloning \`${repository.name}\` Done`);
+        REPO_COUNT += 1;
+        console.log(
+          `Cloning \`${repository.name}\` Done (${REPO_COUNT}/${TOTAL_NUMBER_OF_REPOS})`,
+        );
       }),
     );
     return;
