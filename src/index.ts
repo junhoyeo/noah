@@ -25,7 +25,11 @@ const getActionFromArguments = async (
   const [command, ...params] = [...argv.slice(2)];
   if (command === 'watch') {
     if (params[0].length > 0) {
-      return { action: 'watch', organization: params[0] };
+      let organization: string = params[0];
+      if (organization.includes('github.com')) {
+        organization = organization.split('github.com/')[1].split('/')[0];
+      }
+      return { action: 'watch', organization };
     }
   }
   if (command === 'pull') {
