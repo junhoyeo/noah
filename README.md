@@ -25,7 +25,11 @@ yarn mirrors watch mirrorland
 ```
 
 ```bash
+# Update repos
 yarn mirrors pull
+
+# Remove branches that are no longer in remote
+yarn mirrors prune
 
 # To be implemented later
 yarn mirrors push

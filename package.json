@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "mirrors": "node ./dist"
+    "mirrors": "yarn build && node ./dist"
   },
   "dependencies": {
     "axios": "^0.26.1",

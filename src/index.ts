@@ -13,13 +13,12 @@ const exec = util.promisify(execSync);
 const ROOT = path.join(__dirname, '..');
 const REPOSITORIES = path.join(ROOT, './repositories');
 
-// NOTE: Old hardcoded token have been revoked
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 const getActionFromArguments = async (
   argv: string[],
 ): Promise<
-  | { action: 'help' | 'pull' | 'push' }
+  | { action: 'help' | 'pull' | 'push' | 'prune' }
   | { action: 'watch'; organization: string }
 > => {
   const [command, ...params] = [...argv.slice(2)];
@@ -38,6 +37,9 @@ const getActionFromArguments = async (
   if (command === 'push') {
     return { action: 'push' };
   }
+  if (command === 'prune') {
+    return { action: 'prune' };
+  }
   return { action: 'help' };
 };
 
@@ -45,6 +47,22 @@ const getDirectoriesInPath = async (path: string) =>
   (await fs.promises.readdir(path, { withFileTypes: true }))
     .filter((dirent) => dirent.isDirectory())
     .map((dirent) => dirent.name);
+
+const getRepositories = async () => {
+  const organizations = await getDirectoriesInPath(REPOSITORIES);
+  const repositoriesByOrgs = await Promise.all(
+    organizations.flatMap(async (organizationName) => {
+      const _repositories = await getDirectoriesInPath(
+        path.join(REPOSITORIES, organizationName),
+      );
+      return _repositories.map(
+        (repositoryName) => `${organizationName}/${repositoryName}`,
+      );
+    }),
+  );
+  const repositories = repositoriesByOrgs.flat();
+  return repositories;
+};
 
 const main = async () => {
   if (!shell.which('git') || !shell.which('gh')) {
@@ -97,19 +115,7 @@ const main = async () => {
   }
 
   if (given.action === 'pull') {
-    const organizations = await getDirectoriesInPath(REPOSITORIES);
-
-    const repositoriesByOrgs = await Promise.all(
-      organizations.flatMap(async (organizationName) => {
-        const _repositories = await getDirectoriesInPath(
-          path.join(REPOSITORIES, organizationName),
-        );
-        return _repositories.map(
-          (repositoryName) => `${organizationName}/${repositoryName}`,
-        );
-      }),
-    );
-    const repositories = repositoriesByOrgs.flat();
+    const repositories = await getRepositories();
 
     await Promise.allSettled(
       repositories.map(async (repository) => {
@@ -119,7 +125,26 @@ const main = async () => {
         console.log({ stdout, stderr, repository });
       }),
     );
+    return;
+  }
 
+  if (given.action === 'prune') {
+    const removeBranchesNotInRemote = `git fetch -p ; git branch -r | awk '{print $1}' | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) | awk '{print $1}' | xargs git branch -d`;
+    const repositories = await getRepositories();
+
+    await Promise.allSettled(
+      repositories.map(async (repository) => {
+        try {
+          const { stdout, stderr } = await exec(
+            `cd ./repositories/${repository}; ${removeBranchesNotInRemote}`,
+            { shell: '/bin/bash' },
+          );
+          console.log({ stdout, stderr, repository });
+        } catch (err) {
+          console.error(err);
+        }
+      }),
+    );
     return;
   }
 
