@@ -11,6 +11,7 @@ import { getRepositories } from './github';
 const exec = util.promisify(execSync);
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const USERNAME = process.env.USERNAME || 'junhoyeo';
 
 const getActionFromArguments = async (
   argv: string[],
@@ -80,7 +81,12 @@ const main = async () => {
       repos.map(async (repository) => {
         const clonePath = `./repositories/${given.organization}/${repository.name}`;
         console.log(`Cloning \`${repository.name}\` Started`);
-        await exec(`git clone ${repository.repositoryURL} ${clonePath}`);
+        await exec(
+          `git clone ${repository.repositoryURL.replace(
+            'https://github.com',
+            `https://${USERNAME}@github.com`,
+          )} ${clonePath}`,
+        );
         REPO_COUNT += 1;
         console.log(
           `Cloning \`${repository.name}\` Done (${REPO_COUNT}/${TOTAL_NUMBER_OF_REPOS})`,
