@@ -101,10 +101,14 @@ const main = async () => {
 
     await Promise.allSettled(
       repositories.map(async (repository) => {
-        const { stdout, stderr } = await exec(
-          `cd ./repositories/${repository} && git pull`,
-        );
-        console.log({ stdout, stderr, repository });
+        try {
+          const { stdout, stderr } = await exec(
+            `cd ./repositories/${repository} && git pull`,
+          );
+          console.log({ stdout, stderr, repository });
+        } catch (err) {
+          console.error(err);
+        }
       }),
     );
     return;
