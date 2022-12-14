@@ -114,8 +114,15 @@ const main = async () => {
               'error: Pulling is not possible because you have unmerged',
             )
           ) {
+            const countQuery = `git log --branches --not --remotes  --count  |  grep -c 'commit'`;
+            await exec(`cd ${pwd} && cd ./repositories/${repository}`);
+
+            const { stdout: countOut } = await exec(`${countQuery}`);
+            const count = parseInt(countOut);
+            console.log({ count });
+
             const res = await exec(
-              `cd ${pwd} && cd ./repositories/${repository} && git stash -u && git pull && git stash clear`,
+              `git reset --soft HEAD~${count} && git stash -u && git pull && git stash clear`,
             );
             stdout = res.stdout;
             stderr = res.stderr;
