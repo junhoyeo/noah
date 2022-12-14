@@ -102,6 +102,7 @@ const main = async () => {
     await Promise.allSettled(
       repositories.map(async (repository) => {
         try {
+          console.log(repository, 'running...');
           let { stdout: pwd } = await exec(`pwd`).catch(() => ({
             stdout: '.',
           }));
