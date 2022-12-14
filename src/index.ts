@@ -1,17 +1,14 @@
 import axios from 'axios';
 import { exec as execSync } from 'child_process';
 import 'dotenv/config';
-import fs from 'fs';
-import path from 'path';
 import { argv, exit } from 'process';
 import queryString from 'query-string';
 import shell from 'shelljs';
 import util from 'util';
 
-const exec = util.promisify(execSync);
+import { getRepositories } from './github';
 
-const ROOT = path.join(__dirname, '..');
-const REPOSITORIES = path.join(ROOT, './repositories');
+const exec = util.promisify(execSync);
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
@@ -41,27 +38,6 @@ const getActionFromArguments = async (
     return { action: 'prune' };
   }
   return { action: 'help' };
-};
-
-const getDirectoriesInPath = async (path: string) =>
-  (await fs.promises.readdir(path, { withFileTypes: true }))
-    .filter((dirent) => dirent.isDirectory())
-    .map((dirent) => dirent.name);
-
-const getRepositories = async () => {
-  const organizations = await getDirectoriesInPath(REPOSITORIES);
-  const repositoriesByOrgs = await Promise.all(
-    organizations.flatMap(async (organizationName) => {
-      const _repositories = await getDirectoriesInPath(
-        path.join(REPOSITORIES, organizationName),
-      );
-      return _repositories.map(
-        (repositoryName) => `${organizationName}/${repositoryName}`,
-      );
-    }),
-  );
-  const repositories = repositoriesByOrgs.flat();
-  return repositories;
 };
 
 const main = async () => {
