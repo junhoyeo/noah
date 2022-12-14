@@ -102,9 +102,23 @@ const main = async () => {
     await Promise.allSettled(
       repositories.map(async (repository) => {
         try {
-          const { stdout, stderr } = await exec(
+          let { stdout: pwd } = await exec(`pwd`).catch(() => ({
+            stdout: '.',
+          }));
+          let { stdout, stderr } = await exec(
             `cd ./repositories/${repository} && git pull`,
           );
+          if (
+            stderr.includes(
+              'error: Pulling is not possible because you have unmerged',
+            )
+          ) {
+            const res = await exec(
+              `cd ${pwd} && cd ./repositories/${repository} && git stash -u && git pull && git stash clear`,
+            );
+            stdout = res.stdout;
+            stderr = res.stderr;
+          }
           console.log({ stdout, stderr, repository });
         } catch (err) {
           console.error(err);
