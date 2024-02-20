@@ -34,3 +34,16 @@ yarn mirrors prune
 # To be implemented later
 yarn mirrors push
 ```
+
+TODO: Archive repository details by creating `noah.json` in root
+
+```ts
+{
+  "[org]/[repo]": {
+    org: '',
+    name: '',
+    description: '',
+    date?
+  }
+}
+```
